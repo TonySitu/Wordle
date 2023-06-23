@@ -1,3 +1,11 @@
+/**
+ * Allows the user to interact with the GUI of the game
+ * using keystrokes.
+ *
+ * @author Tony Situ
+ * @version June 23rd, 2023
+ */
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -8,11 +16,22 @@ import java.awt.event.KeyListener;
 public class WordleController extends JFrame implements KeyListener, ActionListener {
     private final WordleModel wordleModel;
 
+    /**
+     * Creates the GUI using the view class.
+     *
+     * @param wordleModel The model of wordle
+     * @param wordleView  The view/GUI of wordle
+     */
     public WordleController(WordleModel wordleModel, WordleView wordleView) {
         this.wordleModel = wordleModel;
         populateFrame(wordleView);
     }
 
+    /**
+     * Creates the GUI for wordle
+     *
+     * @param wordleView the main panel to be added to the GUI
+     */
     private void populateFrame(WordleView wordleView) {
         this.setLayout(new GridLayout(1, 1));
         this.setSize(800, 800);
@@ -34,6 +53,12 @@ public class WordleController extends JFrame implements KeyListener, ActionListe
         this.addKeyListener(this);
     }
 
+    /**
+     * Checks if string is not an integer.
+     *
+     * @param s the String to be assessed
+     * @return true if String is not an int, false otherwise
+     */
     private boolean notInt(String s) {
         try {
             Integer.parseInt(s);
@@ -43,6 +68,13 @@ public class WordleController extends JFrame implements KeyListener, ActionListe
         }
     }
 
+    /**
+     * Checks whether enter, backspace or a latter is pressed.
+     * Depending on these inputs will send different instructions
+     * to the model.
+     *
+     * @param e the event to be processed
+     */
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode()==KeyEvent.VK_BACK_SPACE){
@@ -79,6 +111,12 @@ public class WordleController extends JFrame implements KeyListener, ActionListe
         }
     }
 
+    /**
+     * Checks if the menu buttons are pressed and
+     * performs a specific task depending on the button.
+     *
+     * @param e the event to be processed
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         String action = e.getActionCommand();

@@ -1,3 +1,11 @@
+/**
+ * This class is what the user sees when they interact with
+ * the game. The view displays the game state of the model.
+ *
+ * @author Tony Situ
+ * @version June 23rd, 2023
+ */
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.Observable;
@@ -7,6 +15,10 @@ public class WordleView extends JPanel implements Observer {
     private final WordRow[] wordleRows;
     private final ScorePanel scorePanel;
 
+    /**
+     * Creates the GUI for the wordle game that observes
+     * the model of the game and updates accordingly.
+     */
     public WordleView() {
         this.setLayout(new GridLayout(7, 1));
         scorePanel = new ScorePanel();
@@ -20,6 +32,14 @@ public class WordleView extends JPanel implements Observer {
         }
     }
 
+    /**
+     * Updates the view/what the user sees in accordance to the
+     * model's game state.
+     *
+     * @param obs   the observable object (the model of the game)
+     * @param arg   an argument passed to the {@code notifyObservers}
+     *                 method
+     */
     @Override
     public void update(Observable obs, Object arg) {
         if (obs instanceof WordleModel wordleModel) {
@@ -27,7 +47,6 @@ public class WordleView extends JPanel implements Observer {
             scorePanel.setHighScore(wordleModel.getHighScore());
 
             if (wordleModel.getClearGame()) {
-                wordleModel.setClearGameFalse();
                 for (int row = 0; row < 6; row++) {
                     for (int col = 0; col<wordleRows.length-1; col++) {
                         wordleRows[row].setText(col, "", Color.DARK_GRAY);
@@ -54,7 +73,6 @@ public class WordleView extends JPanel implements Observer {
                 for (int col = 0; col<wordleRows.length-1; col++) {
                     wordleRows[row].setText(col, wordleModel.getInput().get(col), wordleModel.getRowColors()[col]);
                     }
-                wordleModel.setChangeColorFalse();
                 if (row+1 < 6) {
                     wordleRows[row+1].setText(0, "_", Color.DARK_GRAY);
                 }

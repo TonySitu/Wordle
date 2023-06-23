@@ -1,3 +1,10 @@
+/**
+ * This class models a game of Wordle.
+ *
+ * @author Tony Situ
+ * @version June 19th, 2023
+ */
+
 import java.awt.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -22,6 +29,9 @@ public class WordleModel extends Observable {
     private int streak;
     private int highScore;
 
+    /**
+     * Begins the game of Wordle at its default state.
+     */
     public WordleModel() {
         wordleString = getWordleWord().toUpperCase();
         wordleWord = new ArrayList<String>();
@@ -40,58 +50,115 @@ public class WordleModel extends Observable {
         setHighScore();
     }
 
+    /**
+     * Returns the user's input.
+     *
+     * @return the user's input as an ArrayList<String>
+     */
     public ArrayList<String> getInput() {
         return input;
     }
 
+    /**
+     * Returns an array of colors that represent
+     * a single row in a game of wordle.
+     *
+     * @return the row of colors as an array of type Color
+     */
     public Color[] getRowColors() {
         return rowColors;
     }
 
+    /**
+     * getWordleString returns the randomly generated word.
+     *
+     * @return a String that contains the random word
+     */
     public String getWordleString() {
         return wordleString;
     }
 
+    /**
+     * Returns true or false on whether the
+     * letter boxes should change colors
+     *
+     * @return true if letter boxes should change colors,
+     *         false otherwise
+     */
     public boolean getChangeColor() {
         return changeColor;
     }
 
+    /**
+     * Returns true if game needs to be cleared,
+     * false otherwise.
+     *
+     * @return true if the game should be cleared, false otherwise
+     */
     public boolean getClearGame() {
         return clearGame;
     }
 
+    /**
+     * Gets the current row
+     *
+     * @return a number that describes the row as an int
+     */
     public int getRow() {
         return row;
     }
 
+    /**
+     * Returns the column index i.e. the letter
+     * index that the next letter should appear in.
+     *
+     * @return a number that describes the column as an int
+     */
     public int getColIndex() {
         return colIndex;
     }
 
+    /**
+     * Returns the user's current streak.
+     *
+     * @return a number that describes the user's streak as
+     *         an int
+     */
     public int getStreak() {
         return streak;
     }
 
+    /**
+     * Returns the user's high score.
+     *
+     * @return a number that describes the user's high score
+     *         as an int
+     */
     public int getHighScore() {
         return highScore;
     }
 
-    public void setChangeColorFalse() {
-        changeColor = false;
-    }
-
-    public void setClearGameFalse() {
-        clearGame = false;
-    }
-
+    /**
+     * Increments the row to the next for a
+     * new user input.
+     */
     public void incrementRow() {
         row += 1;
     }
 
+    /**
+     * Resets the column index to 0.
+     */
     public void clearColIndex() {
         colIndex = 0;
     }
 
+    /**
+     * Updates the row with the user's input on the wordle
+     * board one letter at a time.
+     *
+     * @param userInput the String input to be added to the row
+     */
     public void updateRowLetter(String userInput) {
         if (input.size() == 5) {
             return;
@@ -102,6 +169,9 @@ public class WordleModel extends Observable {
         notifyObservers();
     }
 
+    /**
+     * Removes a single letter from right to left
+     */
     public void removeLetter() {
         if (!input.isEmpty()) {
             input.remove(input.size()-1);
@@ -111,6 +181,14 @@ public class WordleModel extends Observable {
         }
     }
 
+    /**
+     * Decides whether the letters of the word should
+     * be green, yellow, or gray decided by the rules of
+     * wordle. If there are 5 green letters, the user has
+     * won and returns true, otherwise return false
+     *
+     * @return true if user wins, false otherwise
+     */
     public boolean isInputEqualToWord() {
         int valid = 0;
         changeColor = true;
@@ -131,9 +209,16 @@ public class WordleModel extends Observable {
         setChanged();
         notifyObservers();
         input.clear();
+        changeColor = false;
         return valid == 5;
     }
 
+    /**
+     * Increments the win streak of the user by 1 and stores
+     * it inside an output file. IF the current streak is
+     * greater than the best streak, then update the best streak
+     * and also put it into the output.txt.
+     */
     public void incrementStreak() {
         streak += 1;
 
@@ -150,6 +235,10 @@ public class WordleModel extends Observable {
             }
     }
 
+    /**
+     * Sets the high score for this model by reading the
+     * output.txt.
+     */
     public void setHighScore() {
         try {
             BufferedReader reader = new BufferedReader(new FileReader("output.txt"));
@@ -162,6 +251,10 @@ public class WordleModel extends Observable {
         }
     }
 
+    /**
+     * Sets the streak for this model by reading the
+     * output.txt.
+     */
     public void setStreak() {
         try {
             BufferedReader reader = new BufferedReader(new FileReader("output.txt"));
@@ -178,6 +271,9 @@ public class WordleModel extends Observable {
         notifyObservers();
     }
 
+    /**
+     * Resets the game state for the Model.
+     */
     public void clearGame() {
         row = 0;
         colIndex = 0;
@@ -186,13 +282,21 @@ public class WordleModel extends Observable {
         rowColors = new Color[5];
         wordleString = getWordleWord().toUpperCase();
         wordleWord = new ArrayList<String>();
+        for (char c: wordleString.toCharArray()) {
+            wordleWord.add(String.valueOf(c));
+        }
 
         System.out.println(wordleString);
 
         setChanged();
         notifyObservers();
+        clearGame = false;
     }
 
+    /**
+     * Resets the streak of the user if user loses a
+     * wordle game.
+     */
     public void resetStreak() {
         streak = 0;
         try {
@@ -205,6 +309,12 @@ public class WordleModel extends Observable {
         }
     }
 
+    /**
+     * Gets the wordle word for the user to guess by grabbing a
+     * random word from Words.txt.
+     *
+     * @return a String that contains the wordle word
+     */
     private String getWordleWord() {
         List<String> lines;
         try {
