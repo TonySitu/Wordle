@@ -122,7 +122,7 @@ public class WordleController extends JFrame implements KeyListener, ActionListe
         String action = e.getActionCommand();
 
         if (action.equals("Rules")) {
-
+            new HelpFrame();
         }
         if (action.equals("Controls")) {
 

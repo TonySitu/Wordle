@@ -33,7 +33,7 @@ public class WordleView extends JPanel implements Observer {
     }
 
     /**
-     * Updates the view/what the user sees in accordance to the
+     * Updates the view in accordance to the
      * model's game state.
      *
      * @param obs   the observable object (the model of the game)
