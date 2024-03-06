@@ -45,4 +45,15 @@ public class WordRow extends JPanel {
         wordPanel[col].setBackground(color);
         wordPanel[col].setForeground(Color.WHITE);
     }
+
+    /**
+     * Sets a single letter on the row to a specific color.
+     *
+     * @param col the column that is to be updated
+     * @param color the color that is set onto the panel
+     */
+    public void setColor(int col, Color color) {
+        wordPanel[col].setBackground(color);
+        wordPanel[col].setForeground(Color.WHITE);
+    }
 }

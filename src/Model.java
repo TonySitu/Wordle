@@ -12,19 +12,16 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.*;
 import java.util.List;
-import java.util.Observable;
-import java.util.Random;
-import java.util.ArrayList;
 
-public class WordleModel extends Observable {
-    private ArrayList<String> wordleWord;
+public class Model{
+    private final Collection<View> views;
+    private final ArrayList<String> wordleWord;
     private final ArrayList<String> input;
     private Color[] rowColors;
     private String wordleString;
-    private boolean changeColor;
-    private boolean clearGame;
-    private int row;
+    private int rowIndex;
     private int colIndex;
     private int streak;
     private int highScore;
@@ -32,71 +29,28 @@ public class WordleModel extends Observable {
     /**
      * Begins the game of Wordle at its default state.
      */
-    public WordleModel() {
-        wordleString = getWordleWord().toUpperCase();
-        wordleWord = new ArrayList<String>();
-        input = new ArrayList<String>();
+    public Model() {
+        wordleString = Objects.requireNonNull(getWordleWord()).toUpperCase();
+        wordleWord = new ArrayList<>();
+        input = new ArrayList<>();
+        views = new ArrayList<>();
         rowColors = new Color[5];
-        changeColor = false;
-        clearGame = false;
-        row = 0;
+        rowIndex = 0;
         colIndex = 0;
         highScore = 0;
         for (char c: wordleString.toCharArray()) {
             wordleWord.add(String.valueOf(c));
         }
         System.out.println(wordleString);
-        setStreak();
-        setHighScore();
     }
 
     /**
-     * Returns the user's input.
+     * Adds a view to update to the model
      *
-     * @return the user's input as an ArrayList<String>
+     * @param view the view to add to the model
      */
-    public ArrayList<String> getInput() {
-        return input;
-    }
-
-    /**
-     * Returns an array of colors that represent
-     * a single row in a game of wordle.
-     *
-     * @return the row of colors as an array of type Color
-     */
-    public Color[] getRowColors() {
-        return rowColors;
-    }
-
-    /**
-     * getWordleString returns the randomly generated word.
-     *
-     * @return a String that contains the random word
-     */
-    public String getWordleString() {
-        return wordleString;
-    }
-
-    /**
-     * Returns true or false on whether the
-     * letter boxes should change colors
-     *
-     * @return true if letter boxes should change colors,
-     *         false otherwise
-     */
-    public boolean getChangeColor() {
-        return changeColor;
-    }
-
-    /**
-     * Returns true if game needs to be cleared,
-     * false otherwise.
-     *
-     * @return true if the game should be cleared, false otherwise
-     */
-    public boolean getClearGame() {
-        return clearGame;
+    public void addView(View view) {
+        views.add(view);
     }
 
     /**
@@ -104,8 +58,8 @@ public class WordleModel extends Observable {
      *
      * @return a number that describes the row as an int
      */
-    public int getRow() {
-        return row;
+    public int getRowIndex() {
+        return rowIndex;
     }
 
     /**
@@ -119,31 +73,11 @@ public class WordleModel extends Observable {
     }
 
     /**
-     * Returns the user's current streak.
-     *
-     * @return a number that describes the user's streak as
-     *         an int
-     */
-    public int getStreak() {
-        return streak;
-    }
-
-    /**
-     * Returns the user's high score.
-     *
-     * @return a number that describes the user's high score
-     *         as an int
-     */
-    public int getHighScore() {
-        return highScore;
-    }
-
-    /**
      * Increments the row to the next for a
      * new user input.
      */
     public void incrementRow() {
-        row += 1;
+        rowIndex += 1;
     }
 
     /**
@@ -160,13 +94,14 @@ public class WordleModel extends Observable {
      * @param userInput the String input to be added to the row
      */
     public void updateRowLetter(String userInput) {
-        if (input.size() == 5) {
+        if (colIndex == 5) {
             return;
         }
-        input.add(userInput);
-        colIndex += 1;
-        setChanged();
-        notifyObservers();
+        input.add(colIndex, userInput);
+        views.forEach(view -> view.onAddCharacter(userInput, rowIndex, colIndex));
+        if (colIndex < 4) {
+            colIndex += 1;
+        }
     }
 
     /**
@@ -175,9 +110,10 @@ public class WordleModel extends Observable {
     public void removeLetter() {
         if (!input.isEmpty()) {
             input.remove(input.size()-1);
-            colIndex -= 1;
-            setChanged();
-            notifyObservers();
+            views.forEach(view -> view.onRemoveCharacter(rowIndex, colIndex));
+            if (colIndex > 0) {
+                colIndex -= 1;
+            }
         }
     }
 
@@ -186,31 +122,40 @@ public class WordleModel extends Observable {
      * be green, yellow, or gray decided by the rules of
      * wordle. If there are 5 green letters, the user has
      * won and returns true, otherwise return false
-     *
-     * @return true if user wins, false otherwise
      */
-    public boolean isInputEqualToWord() {
+    public void isInputEqualToWord() {
         int valid = 0;
-        changeColor = true;
 
-        for (int c = 0; c < input.size(); c++) {
-            if (wordleWord.contains(input.get(c))) {
-                if (wordleWord.get(c).equals(input.get(c))) {
-                    rowColors[c] = Color.GREEN;
+        for (int i = 0; i < 5; i++) {
+            if (wordleWord.contains(input.get(i))) {
+                if (wordleWord.get(i).equals(input.get(i))) {
+                    rowColors[i] = Color.GREEN;
                     valid += 1;
                 } else {
-                    rowColors[c] = Color.YELLOW;
+                    rowColors[i] = Color.YELLOW;
                 }
             } else {
-                rowColors[c] = Color.GRAY;
+                rowColors[i] = Color.GRAY;
             }
         }
-
-        setChanged();
-        notifyObservers();
         input.clear();
-        changeColor = false;
-        return valid == 5;
+
+        if (valid == 5) {
+            incrementStreak();
+            clearGame();
+            views.forEach(View::onWin);
+            return;
+        }
+        if (rowIndex == 5) {
+            resetStreak();
+            clearGame();
+            views.forEach(view -> view.onLose(wordleString));
+            return;
+        }
+
+        views.forEach(view -> view.onUpdateRowColor(rowColors, rowIndex));
+        incrementRow();
+        clearColIndex();
     }
 
     /**
@@ -230,8 +175,8 @@ public class WordleModel extends Observable {
             writer.write(highScore + "\n" + streak);
             writer.close();
             setHighScore();
-            } catch(Exception e){
-                e.printStackTrace();
+            } catch(Exception ignored){
+
             }
     }
 
@@ -244,10 +189,9 @@ public class WordleModel extends Observable {
             BufferedReader reader = new BufferedReader(new FileReader("output.txt"));
             String line = reader.readLine();
             highScore = Integer.parseInt(line);
-
+            views.forEach(view -> view.onUpdateScore(highScore));
             reader.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
     }
 
@@ -259,38 +203,29 @@ public class WordleModel extends Observable {
         try {
             BufferedReader reader = new BufferedReader(new FileReader("output.txt"));
             String line = reader.readLine();
-            line = reader.readLine();
             streak = Integer.parseInt(line);
-
+            views.forEach(view -> view.onUpdateStreak(streak));
             reader.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ignored) {
         }
-
-        setChanged();
-        notifyObservers();
     }
 
     /**
      * Resets the game state for the Model.
      */
     public void clearGame() {
-        row = 0;
+        rowIndex = 0;
         colIndex = 0;
-        clearGame = true;
         input.clear();
         rowColors = new Color[5];
-        wordleString = getWordleWord().toUpperCase();
-        wordleWord = new ArrayList<String>();
+        wordleString = Objects.requireNonNull(getWordleWord()).toUpperCase();
+        wordleWord.clear();
         for (char c: wordleString.toCharArray()) {
             wordleWord.add(String.valueOf(c));
         }
 
+        views.forEach(View::onReset);
         System.out.println(wordleString);
-
-        setChanged();
-        notifyObservers();
-        clearGame = false;
     }
 
     /**
@@ -304,8 +239,9 @@ public class WordleModel extends Observable {
             writer.write(highScore + "\n" + streak);
             writer.close();
             setHighScore();
-        } catch(Exception e){
-            e.printStackTrace();
+
+            views.forEach(view -> view.onUpdateStreak(streak));
+        } catch(Exception ignored) {
         }
     }
 

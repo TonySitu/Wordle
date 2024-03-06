@@ -1,7 +1,6 @@
 /**
- * This class implements the Mode View Controller pattern to model the game
+ * This class implements the Mode SwingView Controller pattern to model the game
  * Wordle.
- *
  * To play the game, the user must input keystrokes in order to guess a
  * randomly generated 5-letter word. The letter will highlight green if the
  * letter is in the word and also in the correct position, yellow if the
@@ -16,16 +15,17 @@ import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
-        WordleView view = new WordleView();
-        WordleModel model = new WordleModel();
-        model.addObserver(view);
+        SwingView swingView = new SwingView();
+        Model model = new Model();
+        model.addView(swingView);
 
-        WordleController controller = new WordleController(model, view);
+        Controller controller = new Controller(model, swingView);
         controller.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         controller.setResizable(true);
         controller.setLocationRelativeTo(null);
         controller.setVisible(true);
 
-        view.update(model, null);
+        model.setHighScore();
+        model.setStreak();
     }
 }
