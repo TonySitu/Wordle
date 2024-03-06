@@ -219,12 +219,12 @@ public class Model{
         input.clear();
         rowColors = new Color[5];
         wordleString = Objects.requireNonNull(getWordleWord()).toUpperCase();
+        views.forEach(View::onReset);
         wordleWord.clear();
         for (char c: wordleString.toCharArray()) {
             wordleWord.add(String.valueOf(c));
         }
 
-        views.forEach(View::onReset);
         System.out.println(wordleString);
     }
 

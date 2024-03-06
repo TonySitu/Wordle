@@ -49,7 +49,7 @@ public interface View {
     void onLose(String wordleString);
 
     /**
-     *
+     * Resets the GUI after game is done
      */
     void onReset();
 }
