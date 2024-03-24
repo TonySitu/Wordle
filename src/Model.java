@@ -94,14 +94,13 @@ public class Model{
      * @param userInput the String input to be added to the row
      */
     public void updateRowLetter(String userInput) {
-        if (colIndex == 5) {
+        if (input.size() == 5) {
             return;
         }
         input.add(colIndex, userInput);
         views.forEach(view -> view.onAddCharacter(userInput, rowIndex, colIndex));
-        if (colIndex < 4) {
-            colIndex += 1;
-        }
+        colIndex += 1;
+
     }
 
     /**
@@ -110,7 +109,7 @@ public class Model{
     public void removeLetter() {
         if (!input.isEmpty()) {
             input.remove(input.size()-1);
-            views.forEach(view -> view.onRemoveCharacter(rowIndex, colIndex));
+            views.forEach(view -> view.onRemoveCharacter(rowIndex, colIndex-1));
             if (colIndex > 0) {
                 colIndex -= 1;
             }
